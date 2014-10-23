@@ -87,6 +87,12 @@ func (c *Cache) Misses() int64 {
 	return c.misses
 }
 
+func (c *Cache) RemoveItem(key string) {
+	c.lock()
+	defer c.unlock()
+	c.deleteItem(c.contents[key])
+}
+
 //private functions
 func (c *Cache) burnEntryByStrategy() {
 	if c.options.BurnStrategy == BurnStrategyOldest {
@@ -144,8 +150,6 @@ func (c *Cache) expireIn(t time.Duration, i *list.Element) {
 }
 
 func (c *Cache) deleteItem(i *list.Element) {
-	c.lock()
-	defer c.unlock()
 	c.l.Remove(i)
 	delete(c.contents, i.Value.(*CachedItem).key)
 }

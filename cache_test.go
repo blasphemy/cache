@@ -1,6 +1,7 @@
 package cache
 
 import "testing"
+import "time"
 
 var (
 	ok *Cache
@@ -33,5 +34,23 @@ func TestSetNilRemove(t *testing.T) {
 	ok.Set("Test", nil)
 	if ok.Len() != 0 {
 		t.Error("TestSetNilRemove failed: did not remove item")
+	}
+}
+
+func TestExpireTime(t *testing.T) {
+	op := CacheOptions{}
+	op.BurnStrategy = BurnStrategyRandom
+	op.MaxEntries = 0
+	op.Upper = 0
+	op.ExpirationTime = time.Second * 2
+	oj := NewCache(op)
+	oj.Set("Tests", "FOO BAR")
+	if oj.Get("Tests") != "FOO BAR" {
+		t.Error("Setup for TestExpireTime failed")
+		return
+	}
+	time.Sleep(time.Second * 3)
+	if oj.Get("Tests") != nil {
+		t.Error("TestExpireTime failed")
 	}
 }

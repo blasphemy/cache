@@ -59,7 +59,7 @@ func (c *Cache) Set(key string, value interface{}) {
 	if c.options.ExpirationTime > 0 {
 		go c.expireIn(c.options.ExpirationTime, e)
 	}
-	if c.l.Len() > c.options.Upper {
+	if c.l.Len() > c.options.Upper && c.options.Upper > 0 {
 		c.burnEntryByStrategy()
 	}
 }

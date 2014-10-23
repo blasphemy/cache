@@ -9,8 +9,9 @@ import (
 type BurnStrategy int
 
 const (
-	BurnStrategyRandom = BurnStrategy(1)
-	BurnStrategyOldest = BurnStrategy(2)
+	BurnStrategyRandom    = BurnStrategy(1)
+	BurnStrategyOldest    = BurnStrategy(2)
+	BurnStrategyOldestLRU = BurnStrategy(3)
 )
 
 type Cache struct {
@@ -73,6 +74,9 @@ func (c *Cache) Get(key string) interface{} {
 	k, ok := c.contents[key]
 	if ok {
 		c.hits++
+		if c.options.BurnStrategy == BurnStrategyOldestLRU {
+			c.l.MoveToFront(k)
+		}
 		return k.Value.(*CachedItem).value
 	} else {
 		c.misses++
@@ -111,7 +115,7 @@ func (c *Cache) Len() int {
 
 //private functions
 func (c *Cache) burnEntryByStrategy() {
-	if c.options.BurnStrategy == BurnStrategyOldest {
+	if c.options.BurnStrategy == BurnStrategyOldest || c.options.BurnStrategy == BurnStrategyOldestLRU {
 		c.burnEntryByOldest()
 	} else {
 		c.burnEntryByRandom()

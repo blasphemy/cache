@@ -45,6 +45,10 @@ func NewCache(c CacheOptions) *Cache {
 func (c *Cache) Set(key string, value interface{}) {
 	c.lock()
 	defer c.unlock()
+	if value == nil {
+		c.deleteItem(c.contents[key])
+		return
+	}
 	newitem := &CachedItem{}
 	newitem.value = value
 	newitem.key = key
@@ -91,6 +95,13 @@ func (c *Cache) RemoveItem(key string) {
 	c.lock()
 	defer c.unlock()
 	c.deleteItem(c.contents[key])
+}
+
+//For now we, can't use this internally since it is mutex'd
+func (c *Cache) Len() int {
+	c.lock()
+	defer c.unlock()
+	return c.l.Len()
 }
 
 //private functions

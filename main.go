@@ -53,7 +53,7 @@ func (c *Cache) Set(key string, value interface{}) {
 	if c.options.ExpirationTime > 0 {
 		go c.expireIn(c.options.ExpirationTime, e)
 	}
-	if c.Len() > c.options.Upper {
+	if c.l.Len() > c.options.Upper {
 		c.burnEntryByStrategy()
 	}
 }
@@ -61,8 +61,8 @@ func (c *Cache) Set(key string, value interface{}) {
 func (c *Cache) Get(key string) interface{} {
 	c.lock()
 	defer c.unlock()
-	k := c.contents[key]
-	if k != nil {
+	k, ok := c.contents[key]
+	if ok {
 		c.hits++
 		return k.Value.(*CachedItem).value
 	} else {
@@ -148,10 +148,4 @@ func (c *Cache) deleteItem(i *list.Element) {
 	defer c.unlock()
 	c.l.Remove(i)
 	delete(c.contents, i.Value.(*CachedItem).key)
-}
-
-func (c *Cache) Len() int {
-	c.lock()
-	defer c.unlock()
-	return c.l.Len()
 }

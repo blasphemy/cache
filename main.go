@@ -57,7 +57,7 @@ func (c *Cache) Get(key string) interface{} {
 	k := c.contents[key]
 	if k != nil {
 		c.hits++
-		return k
+		return k.value
 	} else {
 		c.misses++
 		return nil
@@ -90,11 +90,27 @@ func (c *Cache) burnEntryByStrategy() {
 }
 
 func (c *Cache) burnEntryByRandom() {
-
+	for a, _ := range c.contents {
+		delete(c.contents, a)
+		break
+	}
 }
 
 func (c *Cache) burnEntryByOldest() {
-
+	var ts time.Time
+	var i string
+	//seed ts from random item
+	for a, b := range c.contents {
+		i = a
+		ts = b.ts
+		break
+	}
+	for a, b := range c.contents {
+		if b.ts < ts {
+			i = a
+			ts = b.ts
+		}
+	}
 }
 
 func (c *Cache) burnExpiredKeys() {

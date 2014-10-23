@@ -106,6 +106,21 @@ func (c *Cache) RemoveItem(key string) {
 	c.deleteItem(c.contents[key])
 }
 
+func (c *Cache) Trim(num int) {
+	c.lock()
+	defer c.unlock()
+	for num > 0 && c.l.Len() > 0 {
+		c.burnEntryByStrategy()
+	}
+}
+
+func (c *Cache) Bump(key string) {
+	k, ok := c.contents[key]
+	if ok {
+		c.l.MoveToFront(k)
+	}
+}
+
 //For now we, can't use this internally since it is mutex'd
 func (c *Cache) Len() int {
 	c.lock()

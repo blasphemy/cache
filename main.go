@@ -41,6 +41,9 @@ func NewCache(c CacheOptions) *Cache {
 	newc.contents = make(map[string]*list.Element)
 	newc.mutex = &sync.Mutex{}
 	newc.l = list.New()
+	if newc.options.MaxEntries > newc.options.Upper && newc.options.Upper > 0 {
+		newc.options.Upper = newc.options.MaxEntries
+	}
 	return newc
 }
 

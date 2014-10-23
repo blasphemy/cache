@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"container/list"
 	"sync"
 	"time"
 )
@@ -11,7 +12,8 @@ const (
 )
 
 type Cache struct {
-	contents map[string]*CachedItem
+	l        *list.List
+	contents map[string]*list.Element
 	mutex    *sync.Mutex
 	dead     bool
 	hits     int64
@@ -20,7 +22,7 @@ type Cache struct {
 }
 
 type CachedItem struct {
-	ts    time.Time
+	key   string
 	value interface{}
 }
 
@@ -34,21 +36,26 @@ type CacheOptions struct {
 func NewCache(c CacheOptions) *Cache {
 	newc := &Cache{}
 	newc.options = c
-	newc.contents = make(map[string]*CachedItem)
+	newc.contents = make(map[string]*list.Element)
 	newc.mutex = &sync.Mutex{}
+	newc.l = list.New()
 	return newc
 }
 
 func (c *Cache) Set(key string, value interface{}) {
 	c.lock()
 	defer c.unlock()
-	for c.options.Upper > 0 && len(c.contents) > c.options.Upper {
+	newitem := &CachedItem{}
+	newitem.value = value
+	newitem.key = key
+	e := c.l.PushFront(newitem)
+	c.contents[key] = e
+	if c.options.ExpirationTime > 0 {
+		go c.expireIn(c.options.ExpirationTime, e)
+	}
+	if c.Len() > c.options.Upper {
 		c.burnEntryByStrategy()
 	}
-	newitem := &CachedItem{}
-	newitem.ts = time.Now()
-	newitem.value = value
-	c.contents[key] = newitem
 }
 
 func (c *Cache) Get(key string) interface{} {
@@ -57,7 +64,7 @@ func (c *Cache) Get(key string) interface{} {
 	k := c.contents[key]
 	if k != nil {
 		c.hits++
-		return k.value
+		return k.Value.(*CachedItem).value
 	} else {
 		c.misses++
 		return nil
@@ -90,34 +97,16 @@ func (c *Cache) burnEntryByStrategy() {
 }
 
 func (c *Cache) burnEntryByRandom() {
-	for a, _ := range c.contents {
-		delete(c.contents, a)
+	for _, a := range c.contents {
+		c.deleteItem(a)
 		break
 	}
 }
 
 func (c *Cache) burnEntryByOldest() {
-	var ts time.Time
-	var i string
-	//seed ts from random item
-	for a, b := range c.contents {
-		i = a
-		ts = b.ts
-		break
-	}
-	for a, b := range c.contents {
-		if b.ts < ts {
-			i = a
-			ts = b.ts
-		}
-	}
-}
-
-func (c *Cache) burnExpiredKeys() {
-	for a, k := range c.contents {
-		if time.Since(k.ts) > c.options.ExpirationTime && c.options.ExpirationTime > 0 {
-			delete(c.contents, a)
-		}
+	i := c.l.Back()
+	if i != nil {
+		c.deleteItem(i)
 	}
 }
 
@@ -142,4 +131,27 @@ func (c *Cache) runner() {
 		}
 		c.unlock()
 	}
+}
+
+func (c *Cache) expireIn(t time.Duration, i *list.Element) {
+	time.Sleep(t)
+	if c.dead {
+		return
+	}
+	c.lock()
+	defer c.unlock()
+	c.deleteItem(i)
+}
+
+func (c *Cache) deleteItem(i *list.Element) {
+	c.lock()
+	defer c.unlock()
+	c.l.Remove(i)
+	delete(c.contents, i.Value.(*CachedItem).key)
+}
+
+func (c *Cache) Len() int {
+	c.lock()
+	defer c.unlock()
+	return c.l.Len()
 }

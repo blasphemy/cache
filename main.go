@@ -54,6 +54,9 @@ func (c *Cache) Set(key string, value interface{}) {
 		c.deleteItem(c.contents[key])
 		return
 	}
+	if c.l.Len()+1 > c.options.Upper && c.options.Upper > 0 {
+		c.burnEntryByStrategy()
+	}
 	newitem := &CachedItem{}
 	newitem.value = value
 	newitem.key = key
@@ -61,9 +64,6 @@ func (c *Cache) Set(key string, value interface{}) {
 	c.contents[key] = e
 	if c.options.ExpirationTime > 0 {
 		go c.expireIn(c.options.ExpirationTime, e)
-	}
-	if c.l.Len() > c.options.Upper && c.options.Upper > 0 {
-		c.burnEntryByStrategy()
 	}
 }
 

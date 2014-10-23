@@ -6,9 +6,11 @@ import (
 	"time"
 )
 
+type BurnStrategy int
+
 const (
-	BurnStrategyRandom = 1
-	BurnStrategyOldest = 2
+	BurnStrategyRandom = BurnStrategy(1)
+	BurnStrategyOldest = BurnStrategy(2)
 )
 
 type Cache struct {
@@ -29,7 +31,7 @@ type CachedItem struct {
 type CacheOptions struct {
 	MaxEntries     int //If this is set to 0, you must have an expiration time set.
 	Upper          int
-	BurnStrategy   int
+	BurnStrategy   BurnStrategy
 	ExpirationTime time.Duration
 }
 

@@ -54,3 +54,28 @@ func TestExpireTime(t *testing.T) {
 		t.Error("TestExpireTime failed")
 	}
 }
+
+func TestHits(t *testing.T) {
+	toplel := CacheOptions{}
+	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.MaxEntries = 2
+	toplel.Upper = 2
+	ok = NewCache(toplel)
+	ok.Set("test", "lol")
+	if ok.Get("test") != "lol" {
+		t.Error("Setup")
+		return
+	}
+	if ok.Hits() != 1 {
+		t.Error("Fail")
+	}
+}
+
+func TestMisses(t *testing.T) {
+	if ok.Get("non") != nil {
+		t.Error("Setup")
+	}
+	if ok.Misses() != 1 {
+		t.Error("Fail")
+	}
+}

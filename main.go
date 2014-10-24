@@ -35,6 +35,7 @@ type CacheOptions struct {
 	BurnStrategy   BurnStrategy
 	ExpirationTime time.Duration
 	JobInvertal    time.Duration
+	SafeRange      int
 }
 
 func NewCache(c CacheOptions) *Cache {
@@ -171,7 +172,7 @@ func (c *Cache) runner() {
 		}
 		c.lock()
 		if c.options.MaxEntries > 0 {
-			for len(c.contents) > c.options.MaxEntries {
+			for len(c.contents) > c.options.MaxEntries-c.options.SafeRange {
 				c.burnEntryByStrategy()
 			}
 		}

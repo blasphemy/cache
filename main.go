@@ -34,6 +34,7 @@ type CacheOptions struct {
 	Upper          int
 	BurnStrategy   BurnStrategy
 	ExpirationTime time.Duration
+	JobInvertal    time.Duration
 }
 
 func NewCache(c CacheOptions) *Cache {
@@ -85,7 +86,9 @@ func (c *Cache) Get(key string) interface{} {
 }
 
 func (c *Cache) Start() {
-	go c.runner()
+	if c.options.JobInvertal > 0 {
+		go c.runner()
+	}
 }
 
 func (c *Cache) Stop() {
@@ -162,6 +165,7 @@ func (c *Cache) unlock() {
 
 func (c *Cache) runner() {
 	for {
+		time.Sleep(c.options.JobInvertal)
 		if c.dead {
 			break
 		}

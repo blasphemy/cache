@@ -49,10 +49,12 @@ func TestExpireTime(t *testing.T) {
 		t.Error("Setup for TestExpireTime failed")
 		return
 	}
+	oj.Start()
 	time.Sleep(time.Second * 3)
 	if oj.Get("Tests") != nil {
 		t.Error("TestExpireTime failed")
 	}
+	oj.Stop()
 }
 
 func TestHits(t *testing.T) {

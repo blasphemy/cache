@@ -45,6 +45,7 @@ func NewCache(c CacheOptions) *Cache {
 	newc.contents = make(map[string]*list.Element)
 	newc.mutex = &sync.Mutex{}
 	newc.l = list.New()
+	newc.dead = true
 	if newc.options.MaxEntries > newc.options.Upper && newc.options.Upper > 0 {
 		newc.options.Upper = newc.options.MaxEntries
 	}
@@ -88,6 +89,7 @@ func (c *Cache) Get(key string) interface{} {
 }
 
 func (c *Cache) Start() {
+	c.dead = false
 	if c.options.JobInvertal > 0 {
 		go c.runner()
 	}

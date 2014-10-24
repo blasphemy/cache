@@ -25,8 +25,9 @@ type Cache struct {
 }
 
 type CachedItem struct {
-	key   string
-	value interface{}
+	key     string
+	value   interface{}
+	running bool
 }
 
 type CacheOptions struct {
@@ -65,7 +66,7 @@ func (c *Cache) Set(key string, value interface{}) {
 	newitem.key = key
 	e := c.l.PushFront(newitem)
 	c.contents[key] = e
-	if c.options.ExpirationTime > 0 {
+	if c.options.ExpirationTime > 0 && !c.dead {
 		go c.expireIn(c.options.ExpirationTime, e)
 	}
 }
@@ -89,6 +90,11 @@ func (c *Cache) Get(key string) interface{} {
 func (c *Cache) Start() {
 	if c.options.JobInvertal > 0 {
 		go c.runner()
+	}
+	for _, b := range c.contents {
+		if !b.Value.(*CachedItem).running && c.options.ExpirationTime > 0 {
+			go c.expireIn(c.options.ExpirationTime, b)
+		}
 	}
 }
 
@@ -181,8 +187,10 @@ func (c *Cache) runner() {
 }
 
 func (c *Cache) expireIn(t time.Duration, i *list.Element) {
+	i.Value.(*CachedItem).running = true
 	time.Sleep(t)
 	if c.dead {
+		i.Value.(*CachedItem).running = false
 		return
 	}
 	c.lock()

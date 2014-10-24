@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/blasphemy/cache.svg?branch=master)](https://travis-ci.org/blasphemy/cache)[![Coverage Status](https://img.shields.io/coveralls/blasphemy/cache.svg)](https://coveralls.io/r/blasphemy/cache?branch=master)
+
 cache
 =====
 

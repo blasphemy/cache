@@ -100,3 +100,19 @@ func TestAutoBurnOnUpper(t *testing.T) {
 		t.Error("second not 2")
 	}
 }
+
+func TestBump(t *testing.T) {
+	toplel := CacheOptions{}
+	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.Upper = 500
+	ok = NewCache(toplel)
+	ok.Set("first", 1)
+	ok.Set("Second", 2)
+	ok.Bump("first")
+	if ok.l.Front().Value.(*CachedItem).key != "first" {
+		t.Error("Expected first got", ok.l.Front().Value.(*CachedItem).key)
+	}
+	if ok.l.Back().Value.(*CachedItem).key != "Second" {
+		t.Error("Expected first got", ok.l.Back().Value.(*CachedItem).key)
+	}
+}

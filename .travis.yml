@@ -16,3 +16,7 @@ script:
 env:
   global:
     secure: NiB4F+064aPCg1CPBTYVWYDM4RnVcJdbg821Eix1gkEp2fVAPYCiaG5NCsXMIAO82OP6PnEmtmBSq8hMd+VPvWC9sSueCFnkgyTZYcq4qgzjLGGJcWX6bGuKmrTqTzlKY6RemFr69aH+zvL45iN7CiSiX1qGdTdanxNVlvFpCug=
+matrix:
+  allow_failures:
+    go:
+      - 1.1

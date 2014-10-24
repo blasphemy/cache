@@ -110,6 +110,7 @@ func (c *Cache) Trim(num int) {
 	c.lock()
 	defer c.unlock()
 	for num > 0 && c.l.Len() > 0 {
+		num--
 		c.burnEntryByStrategy()
 	}
 }

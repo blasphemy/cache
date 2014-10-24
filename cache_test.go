@@ -116,3 +116,20 @@ func TestBump(t *testing.T) {
 		t.Error("Expected first got", ok.l.Back().Value.(*CachedItem).key)
 	}
 }
+
+func TestBurnEntryByRandom(t *testing.T) {
+	toplel := CacheOptions{}
+	toplel.BurnStrategy = BurnStrategyRandom
+	toplel.Upper = 500
+	ok = NewCache(toplel)
+	ok.Set("first", 1)
+	ok.Set("Second", 2)
+	if ok.Len() != 2 {
+		t.Fail()
+		return
+	}
+	ok.Trim(1)
+	if ok.Len() != 1 {
+		t.Error("Len ", ok.Len())
+	}
+}

@@ -74,8 +74,29 @@ func TestHits(t *testing.T) {
 func TestMisses(t *testing.T) {
 	if ok.Get("non") != nil {
 		t.Error("Setup")
+		return
 	}
 	if ok.Misses() != 1 {
 		t.Error("Fail")
+	}
+}
+
+func TestAutoBurnOnUpper(t *testing.T) {
+	toplel := CacheOptions{}
+	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.MaxEntries = 2
+	toplel.Upper = 1
+	ok = NewCache(toplel)
+	ok.Set("first", 1)
+	if ok.Get("first") != 1 {
+		t.Error("setup")
+	}
+	ok.Set("second", 2)
+	if ok.Get("first") != nil {
+		t.Error("first not nil")
+		return
+	}
+	if ok.Get("second") != 2 {
+		t.Error("second not 2")
 	}
 }

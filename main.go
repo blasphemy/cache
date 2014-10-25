@@ -12,6 +12,7 @@ const (
 	CacheStrategyRandom    = CacheStrategy(1)
 	CacheStrategyOldest    = CacheStrategy(2)
 	CacheStrategyOldestLRU = CacheStrategy(3)
+	CacheStrategyLFU       = CacheStrategy(4)
 )
 
 type Cache struct {
@@ -28,6 +29,7 @@ type CachedItem struct {
 	key     string
 	value   interface{}
 	running bool
+	used    int
 }
 
 type CacheOptions struct {
@@ -78,8 +80,9 @@ func (c *Cache) Get(key string) interface{} {
 	k, ok := c.contents[key]
 	if ok {
 		c.hits++
-		if c.options.CacheStrategy == CacheStrategyOldestLRU {
+		if c.options.CacheStrategy == CacheStrategyOldestLRU || c.options.CacheStrategy == CacheStrategyLFU {
 			c.l.MoveToFront(k)
+			k.Value.(*CachedItem).used++
 		}
 		return k.Value.(*CachedItem).value
 	} else {
@@ -145,6 +148,8 @@ func (c *Cache) Len() int {
 func (c *Cache) burnEntryByStrategy() {
 	if c.options.CacheStrategy == CacheStrategyOldest || c.options.CacheStrategy == CacheStrategyOldestLRU {
 		c.burnEntryByOldest()
+	} else if c.options.CacheStrategy == CacheStrategyLFU {
+		c.burnEntryByLFU()
 	} else {
 		c.burnEntryByRandom()
 	}
@@ -161,6 +166,17 @@ func (c *Cache) burnEntryByOldest() {
 	i := c.l.Back()
 	if i != nil {
 		c.deleteItem(i)
+	}
+}
+
+func (c *Cache) burnEntryByLFU() {
+	counter := 0
+	for e := c.l.Back(); e != nil; e = e.Prev() {
+		if e.Value.(*CachedItem).used == counter {
+			c.deleteItem(e)
+			break
+		}
+		counter++
 	}
 }
 

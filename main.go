@@ -171,12 +171,20 @@ func (c *Cache) burnEntryByOldest() {
 
 func (c *Cache) burnEntryByLFU() {
 	counter := 0
-	for e := c.l.Back(); e != nil; e = e.Prev() {
-		if e.Value.(*CachedItem).used == counter {
-			c.deleteItem(e)
-			break
+	var found bool
+	for {
+		for e := c.l.Back(); e != nil; e = e.Prev() {
+			if e.Value.(*CachedItem).used == counter {
+				c.deleteItem(e)
+				found = true
+				break
+			}
 		}
-		counter++
+		if found {
+			break
+		} else {
+			counter++
+		}
 	}
 }
 

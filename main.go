@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type BurnStrategy int
+type CacheStrategy int
 
 const (
-	BurnStrategyRandom    = BurnStrategy(1)
-	BurnStrategyOldest    = BurnStrategy(2)
-	BurnStrategyOldestLRU = BurnStrategy(3)
+	CacheStrategyRandom    = CacheStrategy(1)
+	CacheStrategyOldest    = CacheStrategy(2)
+	CacheStrategyOldestLRU = CacheStrategy(3)
 )
 
 type Cache struct {
@@ -33,7 +33,7 @@ type CachedItem struct {
 type CacheOptions struct {
 	MaxEntries     int //If this is set to 0, you must have an expiration time set.
 	Upper          int
-	BurnStrategy   BurnStrategy
+	CacheStrategy  CacheStrategy
 	ExpirationTime time.Duration
 	JobInvertal    time.Duration
 	SafeRange      int
@@ -78,7 +78,7 @@ func (c *Cache) Get(key string) interface{} {
 	k, ok := c.contents[key]
 	if ok {
 		c.hits++
-		if c.options.BurnStrategy == BurnStrategyOldestLRU {
+		if c.options.CacheStrategy == CacheStrategyOldestLRU {
 			c.l.MoveToFront(k)
 		}
 		return k.Value.(*CachedItem).value
@@ -143,7 +143,7 @@ func (c *Cache) Len() int {
 
 //private functions
 func (c *Cache) burnEntryByStrategy() {
-	if c.options.BurnStrategy == BurnStrategyOldest || c.options.BurnStrategy == BurnStrategyOldestLRU {
+	if c.options.CacheStrategy == CacheStrategyOldest || c.options.CacheStrategy == CacheStrategyOldestLRU {
 		c.burnEntryByOldest()
 	} else {
 		c.burnEntryByRandom()

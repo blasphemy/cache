@@ -9,7 +9,7 @@ var (
 
 func TestTest(t *testing.T) {
 	toplel := CacheOptions{}
-	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.CacheStrategy = CacheStrategyOldest
 	toplel.MaxEntries = 2
 	toplel.Upper = 2
 	ok = NewCache(toplel)
@@ -39,7 +39,7 @@ func TestSetNilRemove(t *testing.T) {
 
 func TestExpireTime(t *testing.T) {
 	op := CacheOptions{}
-	op.BurnStrategy = BurnStrategyRandom
+	op.CacheStrategy = CacheStrategyRandom
 	op.MaxEntries = 0
 	op.Upper = 0
 	op.ExpirationTime = time.Second * 2
@@ -59,7 +59,7 @@ func TestExpireTime(t *testing.T) {
 
 func TestHits(t *testing.T) {
 	toplel := CacheOptions{}
-	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.CacheStrategy = CacheStrategyOldest
 	toplel.MaxEntries = 2
 	toplel.Upper = 2
 	ok = NewCache(toplel)
@@ -85,7 +85,7 @@ func TestMisses(t *testing.T) {
 
 func TestAutoBurnOnUpper(t *testing.T) {
 	toplel := CacheOptions{}
-	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.CacheStrategy = CacheStrategyOldest
 	toplel.MaxEntries = 2
 	toplel.Upper = 1
 	ok = NewCache(toplel)
@@ -105,7 +105,7 @@ func TestAutoBurnOnUpper(t *testing.T) {
 
 func TestBump(t *testing.T) {
 	toplel := CacheOptions{}
-	toplel.BurnStrategy = BurnStrategyOldest
+	toplel.CacheStrategy = CacheStrategyOldest
 	toplel.Upper = 500
 	ok = NewCache(toplel)
 	ok.Set("first", 1)
@@ -121,7 +121,7 @@ func TestBump(t *testing.T) {
 
 func TestBurnEntryByRandom(t *testing.T) {
 	toplel := CacheOptions{}
-	toplel.BurnStrategy = BurnStrategyRandom
+	toplel.CacheStrategy = CacheStrategyRandom
 	toplel.Upper = 500
 	ok = NewCache(toplel)
 	ok.Set("first", 1)

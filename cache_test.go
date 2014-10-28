@@ -57,6 +57,27 @@ func TestExpireTime(t *testing.T) {
 	oj.Stop()
 }
 
+func TestExpireDEad(t *testing.T) {
+	op := CacheOptions{}
+	op.CacheStrategy = CacheStrategyRandom
+	op.MaxEntries = 0
+	op.Upper = 0
+	op.ExpirationTime = time.Second * 2
+	oj := NewCache(op)
+	oj.Set("Tests", "FOO BAR")
+	if oj.Get("Tests") != "FOO BAR" {
+		t.Error("Setup for TestExpireTime failed")
+		return
+	}
+	oj.Start()
+	oj.Stop()
+	time.Sleep(time.Second * 3)
+	if oj.Get("Tests") != "FOO BAR" {
+		t.Fail()
+	}
+	oj.Stop()
+}
+
 func TestHits(t *testing.T) {
 	toplel := CacheOptions{}
 	toplel.CacheStrategy = CacheStrategyOldest

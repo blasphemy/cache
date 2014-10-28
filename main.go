@@ -58,13 +58,11 @@ func (c *Cache) Set(key string, value interface{}) {
 	c.lock()
 	defer c.unlock()
 	if test := c.contents[key]; test != nil {
-		//TODO how do expiration timers work efficiently in this scenario?
-		test.Value.(*CachedItem).value = value
-		c.l.PushFront(test)
-	}
-	if value == nil {
-		c.deleteItem(c.contents[key])
-		return
+		//TODO fix expiration in this scenario?
+		c.deleteItem(test)
+		if value == nil {
+			return
+		}
 	}
 	if c.l.Len()+1 >= c.options.Upper && c.options.Upper > 0 {
 		c.burnEntryByStrategy()

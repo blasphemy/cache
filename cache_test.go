@@ -135,3 +135,17 @@ func TestBurnEntryByRandom(t *testing.T) {
 		t.Error("Len ", ok.Len())
 	}
 }
+
+func TestDoubleSetValue(t *testing.T) {
+	toplel := CacheOptions{}
+	toplel.Upper = 500
+	ok = NewCache(toplel)
+	ok.Set("first", 1)
+	ok.Set("Second", 2)
+	ok.Set("first", 3)
+	if ok.l.Len() != 2 || len(ok.contents) != 2 {
+		t.Error("MAP LEN ", len(ok.contents))
+		t.Error("LIST LEN", ok.Len())
+		return
+	}
+}

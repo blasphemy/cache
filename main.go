@@ -95,6 +95,8 @@ func (c *Cache) Get(key string) interface{} {
 }
 
 func (c *Cache) Start() {
+	c.lock()
+	defer c.unlock()
 	c.dead = false
 	if c.options.JobInvertal > 0 {
 		go c.runner()
@@ -107,7 +109,12 @@ func (c *Cache) Start() {
 }
 
 func (c *Cache) Stop() {
+	c.lock()
+	defer c.unlock()
 	c.dead = true
+	for _, k := range c.contents {
+		k.Value.(*CachedItem).running = false
+	}
 }
 
 func (c *Cache) Hits() int64 {
@@ -218,7 +225,7 @@ func (c *Cache) runner() {
 func (c *Cache) expireIn(t time.Duration, i *list.Element) {
 	i.Value.(*CachedItem).running = true
 	time.Sleep(t)
-	if c.dead {
+	if c.dead || !i.Value.(*CachedItem).running {
 		i.Value.(*CachedItem).running = false
 		return
 	}
@@ -228,6 +235,7 @@ func (c *Cache) expireIn(t time.Duration, i *list.Element) {
 }
 
 func (c *Cache) deleteItem(i *list.Element) {
+	i.Value.(*CachedItem).running = false
 	c.l.Remove(i)
 	delete(c.contents, i.Value.(*CachedItem).key)
 }

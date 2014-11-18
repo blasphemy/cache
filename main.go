@@ -239,3 +239,12 @@ func (c *Cache) deleteItem(i *list.Element) {
 	c.l.Remove(i)
 	delete(c.contents, i.Value.(*CachedItem).key)
 }
+
+func (c *Cache) Contains(i interface{}) bool {
+	for _, y := range c.contents {
+		if y.Value == i {
+			return true
+		}
+	}
+	return false
+}

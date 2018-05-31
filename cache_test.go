@@ -1,7 +1,9 @@
 package cache
 
-import "testing"
-import "time"
+import (
+	"testing"
+	"time"
+)
 
 var (
 	ok *Cache
